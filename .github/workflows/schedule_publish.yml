@@ -20,9 +20,6 @@ jobs:
       - name: Run auto post script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          WP_USER: ${{ secrets.WP_USER }}
-          WORDPRESS_TOKEN: ${{ secrets.WORDPRESS_TOKEN }}
-          WP_SITE: ${{ secrets.WP_SITE }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           WP_EMAIL_ADDRESS: ${{ secrets.WP_EMAIL_ADDRESS }}

@@ -68,11 +68,6 @@ WP_EMAIL_ADDRESS="publish-abc123@vinaybilla5.wordpress.com"
 ### Example:
 ```properties
 GEMINI_API_KEY="AIzaSyBNC6pBQ__X324Q-jJ7_6dHhjXXS2H7_MQ"
-WP_USER="vinaybilla2021"
-WORDPRESS_TOKEN='rxn5 s4sc hlpk c7l3'
-WP_SITE="https://vinaybilla5.wordpress.com"
-
-# Email-based posting (Post by Email feature)
 GMAIL_USER="myname@gmail.com"
 GMAIL_APP_PASSWORD="qdag yafo nlzq pxbc"
 WP_EMAIL_ADDRESS="publish-abc123@vinaybilla5.wordpress.com"
@@ -96,10 +91,9 @@ This script will:
 
 ## Usage
 
-Once configured, the script will automatically:
-
-1. **Try XML-RPC first** (if available)
-2. **Fall back to email** if XML-RPC fails
+Once configured, the script will automatically generate a developer-focused
+blog post and send it via your configured Gmail account to the WordPress
+Post-by-Email address. The script uses email-only posting (no XML-RPC/REST).
 
 ### Run the script:
 ```bash
@@ -108,9 +102,7 @@ python3 auto_post_wp.py
 
 Expected output:
 ```
-INFO Attempting XML-RPC publishing...
-WARNING XML-RPC publishing failed: [error details]
-INFO Falling back to email-based posting...
+INFO Publishing via Gmail Post by Email...
 INFO ✓ Post sent via email (check WordPress dashboard)
 ```
 
@@ -195,26 +187,22 @@ EOF
 
 The updated `auto_post_wp.py` now has:
 
-1. **`publish_to_wordpress()`** — Tries XML-RPC/REST API (original method)
-2. **`publish_via_email()`** — Sends post via Gmail SMTP to WordPress
-3. **`main()`** — Tries XML-RPC first, falls back to email if it fails
+1. **`publish_via_email()`** — Sends the generated HTML via Gmail SMTP to your WordPress Post-by-Email address
+2. **`main()`** — Orchestrates topic generation, post generation, basic checks, then posts via email
 
 Flow:
 ```
-Generate Topic → Generate Post → Try XML-RPC → (if fails) Try Email → Log result
+Generate Topic → Generate Post → Send email to WordPress Post-by-Email → Log result
 ```
 
 ---
 
-## Differences from XML-RPC
+## Notes
 
-| Feature | XML-RPC | Email |
-|---------|---------|-------|
-| **Speed** | Instant | 1-2 minutes |
-| **Post Status** | Draft created directly | Email processed, draft created |
-| **Formatting** | Full HTML support | Basic HTML support |
-| **Review** | Optional | Recommended (check drafts) |
-| **Tags** | Via XML-RPC API | Manual (add after) |
+This repository no longer implements XML-RPC/REST publishing. The email-based
+approach is simpler to configure (Gmail app password + WordPress Post-by-Email)
+and works reliably for WordPress.com-hosted blogs where API access may be
+restricted.
 
 ---
 

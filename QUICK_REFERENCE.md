@@ -4,22 +4,11 @@
 
 ### Test & Diagnose
 ```bash
-# Full diagnostic (ALWAYS run this first!)
-python3 diagnose_wp.py
-
 # Check environment variables are loaded
 python3 -c "from dotenv import load_dotenv; import os; load_dotenv(); print('✓' if os.getenv('GEMINI_API_KEY') else '✗ Missing GEMINI_API_KEY')"
 
-# Test WordPress credentials
-python3 << 'EOF'
-import xmlrpc.client, ssl, os
-from dotenv import load_dotenv
-load_dotenv()
-ssl_ctx = ssl.create_default_context()
-ssl_ctx.check_hostname = ssl_ctx.verify_mode = False
-server = xmlrpc.client.ServerProxy("https://wordpress.com/xmlrpc.php", context=ssl_ctx)
-print("✓ Authenticated" if server.wp.getUsersBlogs(os.getenv('WP_USER'), os.getenv('WORDPRESS_TOKEN')) else "✗ Auth failed")
-EOF
+# Send a quick test email to verify SMTP/Post-by-Email
+python3 -c "from dotenv import load_dotenv, os; import smtplib; from email.mime.text import MIMEText; load_dotenv(); g=os.getenv('GMAIL_USER'); p=os.getenv('GMAIL_APP_PASSWORD'); w=os.getenv('WP_EMAIL_ADDRESS'); msg=MIMEText('Test body'); msg['Subject']='Test Post'; msg['From']=g; msg['To']=w; s=smtplib.SMTP_SSL('smtp.gmail.com',465); s.login(g,p); s.send_message(msg); s.quit(); print('✓ Test email sent')"
 ```
 
 ### Run the Script
@@ -55,16 +44,13 @@ pip install google-genai requests python-dotenv
 
 ---
 
-## Troubleshooting Quick Map
+### Troubleshooting Quick Map
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| "Missing env variables" | .env not found | Run `python3 diagnose_wp.py` |
-| "401 Unauthorized" | Wrong credentials | Check blog owner, run `diagnose_wp.py` |
-| "0 blogs found" | Wrong account | Update WP_USER in .env |
-| "Certificate verify failed" | SSL issue | Already handled by script |
-| "Couldn't parse JSON" | Gemini format issue | Expected, posts still publish |
-| "404 Not Found" | REST API disabled | Script uses XML-RPC now (should work) |
+| "Missing env variables" | .env not found | Verify `.env` and required keys (see Environment Variables below)
+| "Couldn't parse JSON" | Gemini format issue | Script falls back to generating plain text post; try re-running
+| "Email not creating post" | Wrong WP_EMAIL_ADDRESS or Post-by-Email disabled | Verify WP_EMAIL_ADDRESS in WordPress Settings → Writing
 
 ---
 
@@ -74,10 +60,10 @@ pip install google-genai requests python-dotenv
 # Required: Google Gemini API
 GEMINI_API_KEY="AIza..."
 
-# Required: WordPress credentials
-WP_USER="your_blog_username"
-WORDPRESS_TOKEN="your_app_password"
-WP_SITE="https://your.blog.com"
+# Required for email publishing
+GMAIL_USER="your_gmail@gmail.com"
+GMAIL_APP_PASSWORD="your_16_char_app_password"
+WP_EMAIL_ADDRESS="publish-abc123@yourblog.wordpress.com"
 ```
 
 ### Getting Credentials
@@ -88,14 +74,10 @@ WP_SITE="https://your.blog.com"
 - Copy the key
 
 **WP_USER & WORDPRESS_TOKEN:**
-- Log into WordPress.com dashboard
-- Settings → Security → App Passwords
-- Create new app password
-- Copy username & password
+- (No longer used. This project uses Post-by-Email for publishing.)
 
 **WP_SITE:**
-- WordPress.com: `https://yourblog.wordpress.com`
-- Self-hosted: `https://yourdomain.com`
+- (No longer used. This project uses Post-by-Email for publishing.)
 
 ---
 
@@ -104,7 +86,6 @@ WP_SITE="https://your.blog.com"
 | File | Purpose |
 |------|---------|
 | `auto_post_wp.py` | Main script - generates & publishes posts |
-| `diagnose_wp.py` | Diagnostic tool - tests WordPress connection |
 | `requirements.txt` | Python dependencies |
 | `.env` | Environment variables (credentials) |
 | `publish_log.jsonl` | Log of all published posts |
@@ -116,13 +97,8 @@ WP_SITE="https://your.blog.com"
 ## Common Tasks
 
 ### Change publish status (draft vs live)
-Edit `auto_post_wp.py` line ~190:
-```python
-# Change from:
-result = publish_to_wordpress(post, publish_status="draft")
-# To:
-result = publish_to_wordpress(post, publish_status="publish")
-```
+- Post-by-Email behavior is controlled by WordPress settings (not in code)
+- Posts are usually created as drafts; publish them manually or configure WordPress to auto-publish
 
 ### Change Gemini model
 Edit `choose_topic()` and `generate_post()` functions:
@@ -150,22 +126,19 @@ Create `.github/workflows/auto-post.yml` (see `SETUP_AND_TROUBLESHOOTING.md`)
 **This project:**
 - 📖 `SETUP_AND_TROUBLESHOOTING.md` - Complete guide
 - 📊 `STATUS.md` - Current issues & solutions
-- 🔧 `diagnose_wp.py` - Interactive troubleshooting
 
 **External:**
 - 🤖 https://ai.google.dev - Google AI documentation
 - 📝 https://developer.wordpress.com/docs/api/ - WordPress API docs
-- 🐍 https://docs.python.org/3/library/xmlrpc.html - XML-RPC library docs
 
 ---
 
 ## Pro Tips
 
-1. **Always run `diagnose_wp.py` first** - Saves hours of debugging
-2. **Test with `publish_status="draft"` first** - Review before going live
-3. **Watch `publish_log.jsonl`** - Verify posts are being created
-4. **Keep `.env` secure** - Never commit to git, add to `.gitignore`
-5. **Use GitHub Actions** - Much easier than managing cron jobs
+1. **Test with small posts first** - Review generated content before scheduling large runs
+2. **Watch `publish_log.jsonl`** - Verify posts are being created
+3. **Keep `.env` secure** - Never commit to git, add to `.gitignore`
+4. **Use GitHub Actions** - Much easier than managing cron jobs
 
 ---
 

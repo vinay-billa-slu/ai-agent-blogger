@@ -7,7 +7,7 @@ This script auto-generates blog posts using Google Gemini AI and publishes them 
 **Features:**
 - ✅ Dynamically generates developer-focused topics (no hardcoded list)
 - ✅ Generates full blog posts with Gemini AI
-- ✅ Publishes to WordPress via XML-RPC (compatible with WordPress.com)
+- ✅ Publishes to WordPress via Post-by-Email (SMTP email delivery)
 - ✅ Loads credentials from `.env` file (secure, not in code)
 
 ---
@@ -27,30 +27,31 @@ pip install -r requirements.txt
 
 ### 2. Set Up Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root with the values below. This project now publishes posts using WordPress' "Post-by-Email" feature, so you need a working SMTP account (we document Gmail SMTP below) and the special WordPress posting email address.
 
 ```properties
 GEMINI_API_KEY="your_gemini_api_key_here"
-WP_USER="your_wordpress_username"
-WORDPRESS_TOKEN="your_wordpress_app_password_or_token"
-WP_SITE="https://yourblog.wordpress.com"
+GMAIL_USER="your_gmail_address@gmail.com"
+GMAIL_APP_PASSWORD="your_gmail_app_password"
+WP_EMAIL_ADDRESS="your-blog-post-by-email@post.wordpress.com"
 ```
 
-**Where to get these:**
+Where to get these:
 
 #### GEMINI_API_KEY
 - Go to: https://aistudio.google.com/app/apikeys
 - Create a new API key
 - Copy the full key
 
-#### WP_USER & WORDPRESS_TOKEN
-- For **WordPress.com**: Go to Account Settings → Security → App Passwords
-- For **Self-hosted WordPress**: Go to Users → Your Profile → Application Passwords
-- Create a new app password (do NOT use your main password)
+#### GMAIL_USER & GMAIL_APP_PASSWORD
+- For reliable SMTP sending we recommend using an app-specific password (Gmail) rather than your main account password.
+- Create an app password in your Google Account (Security → App passwords). Use that value for `GMAIL_APP_PASSWORD`.
 
-#### WP_SITE
-- For **WordPress.com**: `https://yourblog.wordpress.com`
-- For **Self-hosted**: `https://yourdomain.com`
+If you use another SMTP provider, set `GMAIL_USER`/`GMAIL_APP_PASSWORD` to the appropriate SMTP username and app password. The script defaults to using Gmail's server (smtp.gmail.com:465).
+
+#### WP_EMAIL_ADDRESS (WordPress Post-by-Email address)
+- On WordPress.com the Post-by-Email address looks like `something@post.wordpress.com` and can be found in your WordPress dashboard under My Site → Tools → Post by Email (or similar location). Paste that address into `WP_EMAIL_ADDRESS`.
+- The Post-by-Email feature typically creates drafts by default; verify the destination mailbox behavior in your WordPress settings.
 
 ### 3. Run the Script
 
@@ -79,55 +80,39 @@ echo 'GEMINI_API_KEY="your_key"' > .env
 
 # Option 2: Export as shell variables
 export GEMINI_API_KEY="your_key"
-export WP_USER="your_user"
-export WORDPRESS_TOKEN="your_token"
-export WP_SITE="https://your.site"
+export GMAIL_USER="your_gmail_address@gmail.com"
+export GMAIL_APP_PASSWORD="your_gmail_app_password"
+export WP_EMAIL_ADDRESS="your-blog-post-by-email@post.wordpress.com"
 ```
 
 ---
 
-### Issue 2: "401 Unauthorized" or "Sorry, you are not allowed to publish posts"
+### Issue 2: Email sending fails or WordPress doesn't receive posts
 
-**Cause:** WordPress credentials are invalid or XML-RPC is disabled
+Common causes and fixes for the email-based publishing flow:
 
-**WordPress.com Fixes:**
+1. SMTP authentication failure (wrong app password)
+  - If using Gmail, make sure you created an app-specific password and used that value for `GMAIL_APP_PASSWORD`.
+  - If your account has 2FA enabled, the app password is required.
 
-1. **Check if blog is under correct account:**
-   - Log in to WordPress.com with `WP_USER`
-   - Go to "My Sites" 
-   - Do you see the blog you're trying to publish to?
-   - If NOT: The blog is under a different account; use that account's credentials
+2. SMTP server blocked by network/ISP
+  - Some hosting networks restrict outbound SMTP. Test sending from your machine:
+    - Use the `test_email()` helper in `auto_post_wp.py` or run the script locally to verify connectivity.
 
-2. **Enable XML-RPC:**
-   - Go to **Settings → Writing**
-   - Look for "Remote Publishing" or "XML-RPC"
-   - Enable it
-   - If you don't see this option, your plan may not support it (upgrade to Business plan)
+3. Incorrect WordPress Post-by-Email address
+  - Double-check `WP_EMAIL_ADDRESS` in your `.env` — it must match the address shown in your WordPress dashboard (looks like `yourcode@post.wordpress.com`).
 
-3. **Check app password format:**
-   - WordPress generates passwords with spaces like: `rxn5 s4sc hlpk c7l3`
-   - Make sure it's exactly as given (including spaces)
-   - Don't mix it with your main password
-
-4. **Test credentials directly:**
-   ```python
-   import xmlrpc.client, ssl
-   ssl_context = ssl.create_default_context()
-   ssl_context.check_hostname = False
-   ssl_context.verify_mode = ssl.CERT_NONE
-   
-   server = xmlrpc.client.ServerProxy("https://wordpress.com/xmlrpc.php", context=ssl_context)
-   blogs = server.wp.getUsersBlogs("your_user", "your_password")
-   print(blogs)  # Should show your blogs
-   ```
+4. WordPress posted content not showing as expected
+  - Post-by-Email behavior depends on WordPress settings — it often creates drafts. Check My Site → Posts or the Drafts section in your WordPress admin.
+  - If only the subject appears and no body, ensure the email is sent as a multipart MIME message with an HTML part; `auto_post_wp.py` sends both HTML and plain-text fallback.
 
 ---
 
-### Issue 3: "404 Not Found" or REST API Errors
+### Issue 3: REST or REST API-based publishing no longer used
 
-**Cause:** REST API is disabled (we now use XML-RPC by default)
+The repository previously attempted to publish via WordPress REST API and other programmatic endpoints. Those approaches were removed because many WordPress.com blogs restrict those endpoints or require upgraded plans.
 
-**Status:** This is expected. The script now uses XML-RPC which works better with WordPress.com.
+This project uses Post-by-Email (SMTP) as the reliable publishing method. If you prefer to restore REST API publishing, you can adapt `auto_post_wp.py` to call `/wp-json/wp/v2/posts` with OAuth/Basic auth but be aware many WordPress.com installs do not allow it without a paid plan or elevated permissions.
 
 ---
 
@@ -157,22 +142,12 @@ pip install certifi
 
 ## Publishing Strategy
 
-### Draft vs. Publish
+This project publishes by sending an email to your WordPress Post-by-Email address. Behavior differs slightly from REST/API-based methods:
 
-**Default (Draft):** 
-```python
-result = publish_to_wordpress(post, publish_status="draft")
-```
-- Post is saved as draft
-- You can review before publishing
-- No one sees it yet
+- Post-by-Email usually creates drafts by default (so you can review before publishing). Check your WordPress settings to confirm.
+- If you want posts to publish live automatically, configure WordPress to publish emails automatically (if supported) or manually publish the drafts.
 
-**Live (Publish):**
-```python
-result = publish_to_wordpress(post, publish_status="publish")
-```
-- Post goes live immediately
-- Changes this in `main()` function when ready
+The script sends the post as an HTML multipart email (HTML body + plain-text fallback). Subject becomes post title; body becomes post content (HTML preserved). If you need to change this behavior, edit `publish_via_email()` in `auto_post_wp.py`.
 
 ### Schedule Automated Posts
 
@@ -187,10 +162,10 @@ crontab -e
 
 #### Option 2: GitHub Actions (Recommended)
 
-Create `.github/workflows/auto-post.yml`:
+Create `.github/workflows/auto-post.yml` (or use the provided workflow). Example:
 
 ```yaml
-name: Auto Post to WordPress
+name: Auto Post to WordPress (via Email)
 
 on:
   schedule:
@@ -204,22 +179,20 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-      
+          python-version: '3.10'
       - run: pip install -r requirements.txt
-      
       - run: python3 auto_post_wp.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          WORDPRESS_TOKEN: ${{ secrets.WORDPRESS_TOKEN }}
-          WP_USER: ${{ secrets.WP_USER }}
-          WP_SITE: ${{ secrets.WP_SITE }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          WP_EMAIL_ADDRESS: ${{ secrets.WP_EMAIL_ADDRESS }}
 ```
 
 Then:
 1. Add your secrets to GitHub: Settings → Secrets and variables → Actions
-2. Commit `.github/workflows/auto-post.yml`
-3. Posts will auto-generate daily!
+2. Commit the workflow file
+3. The workflow will run on schedule and can also be triggered manually
 
 ---
 
@@ -307,14 +280,18 @@ A: No. Gemini AI generates original content. Always review drafts and add your o
 **Q: Can I use this with Medium, Dev.to, or Hashnode?**
 A: Currently only WordPress. Medium/Dev.to have different APIs. PRs welcome!
 
+
 **Q: Does this work with self-hosted WordPress?**
-A: Yes! Just set `WP_SITE="https://yourdomain.com"` and ensure XML-RPC is enabled in Settings → Writing.
+A: It can. Self-hosted WordPress may not expose a Post-by-Email address by default. Options:
+
+- If your self-hosted host provides an email-to-post address, set `WP_EMAIL_ADDRESS` accordingly and ensure your SMTP account can send to it.
+- Alternatively, configure the REST API on your site and provide credentials; note REST requires proper auth (Application Passwords or OAuth) and is outside the default email flow.
 
 **Q: How do I stop auto-posts?**
-A: Delete or comment out the cron job / GitHub workflow, or modify `main()` to not call `publish_to_wordpress()`.
+A: Remove or disable the cron job / GitHub workflow, or modify `main()` to not call `publish_via_email()`.
 
 **Q: Can I edit topics before publishing?**
-A: Yes! Modify `choose_topic()` to accept user input, or save drafts for manual review.
+A: Yes. The script saves post metadata to `publish_log.jsonl` locally and sends drafts to WordPress by default (depending on WP settings). You can modify `choose_topic()` to prompt for input or change `publish_via_email()` to publish live automatically.
 
 ---
 
@@ -323,7 +300,7 @@ A: Yes! Modify `choose_topic()` to accept user input, or save drafts for manual 
 If you encounter issues:
 
 1. Check the logs: `tail -20 publish_log.jsonl`
-2. Run test script to check connectivity
-3. Verify all credentials are correct (especially spaces/special chars)
-4. Ensure XML-RPC is enabled on your WordPress blog
+2. Run the `test_email()` helper or `test_content_generation.py` to check connectivity and content generation
+3. Verify all credentials are correct (especially spaces/special chars in app passwords)
+4. Confirm `WP_EMAIL_ADDRESS` is correct and that WordPress' Post-by-Email is enabled for your site
 
