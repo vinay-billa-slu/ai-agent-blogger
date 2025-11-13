@@ -104,12 +104,14 @@ def generate_post(topic, model="gemini-2.0-flash", max_output_tokens=1200):
     logging.info("Generating post for topic: %s", topic)
     prompt = f"""
 You are a professional Medium/WordPress writer. Write a 700-900 word article about: {topic}
-Return output as JSON ONLY with keys:
-  - title (string)
-  - subtitle (string, one-line)
-  - body_html (string, valid HTML: use <h2>, <p>, <ul>/<li> as needed)
-  - tags (list of strings, up to 5)
-Keep language original, friendly, and actionable.
+Return ONLY valid JSON with these exact keys (no markdown, no extra text, just JSON):
+{{
+  "title": "string",
+  "subtitle": "string, one-line summary",
+  "body_html": "string with HTML tags like <h2>, <p>, <ul>/<li>",
+  "tags": ["array", "of", "tags"]
+}}
+Make the article original, friendly, and actionable.
 """
     # Use the genai SDK to generate text
     response = client.models.generate_content(
@@ -120,37 +122,76 @@ Keep language original, friendly, and actionable.
     # The SDK returns objects; response.text or str(response) contains the model output
     text = getattr(response, "text", None) or str(response)
     text = text.strip()
+    
+    # Try to extract JSON from markdown code blocks if present
+    if "```json" in text:
+        start = text.find("```json") + 7
+        end = text.find("```", start)
+        if end > start:
+            text = text[start:end].strip()
+    elif "```" in text:
+        start = text.find("```") + 3
+        end = text.find("```", start)
+        if end > start:
+            text = text[start:end].strip()
+    
     # attempt to parse JSON from the model
     try:
         data = json.loads(text)
-    except Exception:
-        # fallback: wrap the raw text into body_html
-        logging.warning("Couldn't parse JSON from model output — using fallback wrapping")
-        # Clean up the text: remove markdown code fences and extra whitespace
-        cleaned_text = text
-        # Remove ```json ... ``` markdown
-        cleaned_text = cleaned_text.replace("```json", "").replace("```", "")
-        # Remove leading/trailing quotes and braces from failed JSON attempts
-        cleaned_text = cleaned_text.strip().lstrip('{').rstrip('}').strip()
-        # Remove common JSON formatting artifacts
-        cleaned_text = cleaned_text.replace('\\n', '\n').replace('\\t', '\t')
-        # Split into lines and filter out JSON key lines
-        lines = []
-        for line in cleaned_text.split('\n'):
-            line = line.strip()
-            # Skip empty lines and JSON key patterns like "title": or "body_html":
-            if line and not line.rstrip('":,').endswith('"'):
-                lines.append(line)
-            elif line and not any(k in line for k in ['"title":', '"subtitle":', '"body_html":', '"tags":']):
-                lines.append(line)
-        cleaned_text = '\n'.join(lines).strip()
+        logging.info("✓ Successfully parsed JSON response from Gemini")
+    except json.JSONDecodeError as e:
+        # fallback: Generate full content using a simpler approach
+        logging.warning("JSON parsing failed (%s), generating content with fallback prompt", str(e)[:50])
         
-        data = {
-            "title": topic,
-            "subtitle": "",
-            "body_html": "<p>" + cleaned_text.replace("\n\n", "</p><p>").replace("\n", "<br/>") + "</p>",
-            "tags": [topic.split()[0].lower()]
-        }
+        # Make a second attempt with simpler prompt
+        fallback_prompt = f"""
+Write a 700-900 word blog post about: {topic}
+Use professional, friendly tone. Include introduction, main points, and conclusion.
+Format with clear sections and paragraphs. No JSON, no markdown, plain text only.
+"""
+        try:
+            response2 = client.models.generate_content(
+                model=model,
+                contents=fallback_prompt,
+                config=genai.types.GenerateContentConfig(max_output_tokens=max_output_tokens)
+            )
+            body_text = getattr(response2, "text", None) or str(response2)
+            body_text = body_text.strip()
+            
+            # Convert plain text to HTML paragraphs
+            body_html = ""
+            for para in body_text.split('\n\n'):
+                para = para.strip()
+                if para:
+                    # Convert bullet points to HTML lists
+                    if para.startswith('-') or para.startswith('*'):
+                        lines = para.split('\n')
+                        body_html += "<ul>"
+                        for line in lines:
+                            line = line.strip().lstrip('-').lstrip('*').strip()
+                            if line:
+                                body_html += f"<li>{line}</li>"
+                        body_html += "</ul>"
+                    else:
+                        body_html += f"<p>{para}</p>"
+            
+            data = {
+                "title": topic,
+                "subtitle": f"A detailed guide on {topic}",
+                "body_html": body_html,
+                "tags": [word.lower() for word in topic.split()[:3]]
+            }
+            logging.info("✓ Generated content using fallback prompt")
+        except Exception as fallback_error:
+            logging.error("Fallback generation also failed: %s", fallback_error)
+            # Last resort: create minimal post
+            data = {
+                "title": topic,
+                "subtitle": f"Expert insights on {topic}",
+                "body_html": f"<p>This article explores the key concepts, best practices, and practical applications of {topic} in modern development. Whether you're a beginner or an experienced developer, you'll find valuable insights and actionable takeaways.</p>",
+                "tags": [word.lower() for word in topic.split()[:3]]
+            }
+    
     return data
 
 def run_basic_checks(post):
