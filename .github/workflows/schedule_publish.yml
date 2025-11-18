@@ -1,7 +1,7 @@
 name: Scheduled Auto Post to WordPress
 on:
   schedule:
-    - cron: '0 9 * * *'  # every day at 09:00 UTC
+    - cron: '0 9 * * *'
   workflow_dispatch:
 
 jobs:
@@ -9,19 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
       - name: Install dependencies
+        working-directory: ${{ github.workspace }}
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install python-dotenv
+
       - name: Run auto post script
+        working-directory: ${{ github.workspace }}
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          WP_EMAIL_ADDRESS: ${{ secrets.WP_EMAIL_ADDRESS }}
+          WP_SITE: ${{ secrets.WP_SITE }}
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASS: ${{ secrets.WORDPRESS_TOKEN }}
+          GENAI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python auto_post_wp.py
