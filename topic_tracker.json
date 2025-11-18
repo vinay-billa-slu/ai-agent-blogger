@@ -1,0 +1,27 @@
+{
+  "next_category_index": 0,
+  "used_topics": [
+    "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
+    "Micro-Frontends: Share React Components Between Frameworks for Reusability",
+    "Optimizing PostgreSQL Queries with JSONB Indexes: A Practical Guide",
+    "Automated Canary Deployments: Minimize Risk and Maximize Confidence",
+    "Eventual Consistency Trade-offs: Choosing the Right Architecture for Scale",
+    "Eliminate N+1 Queries: Deep Dive into Efficient Data Fetching",
+    "Secrets Management in CI/CD: Secure Pipelines from Development to Production",
+    "Kubernetes Operators: Automating Complex Application Deployments & Management",
+    "Branching Strategies Demystified: Gitflow vs. Trunk-Based Development in Practice",
+    "From Burnout to Balance: Sustainable Coding Habits for Career Longevity"
+  ],
+  "category_counts": {
+    "Programming Languages": 1,
+    "Frameworks & Libraries": 1,
+    "Databases & Data Engineering": 1,
+    "DevOps & Infrastructure": 1,
+    "System Design & Architecture": 1,
+    "Performance & Optimization": 1,
+    "Security & Best Practices": 1,
+    "Emerging Tech & Tools": 1,
+    "Software Engineering Practices": 1,
+    "Career & Productivity": 1
+  }
+}

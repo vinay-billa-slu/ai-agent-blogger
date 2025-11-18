@@ -15,6 +15,7 @@ import argparse
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from markdown import markdown
+from pathlib import Path
 
 # --- Google GenAI (Gemini) client
 from google import genai
@@ -41,31 +42,99 @@ if not GENAI_API_KEY:
 
 client = genai.Client(api_key=GENAI_API_KEY)
 
+# Category list for topic diversification
+TECH_CATEGORIES = [
+    "Programming Languages",
+    "Frameworks & Libraries",
+    "Databases & Data Engineering",
+    "DevOps & Infrastructure",
+    "System Design & Architecture",
+    "Performance & Optimization",
+    "Security & Best Practices",
+    "Emerging Tech & Tools",
+    "Software Engineering Practices",
+    "Career & Productivity"
+]
+
+# File to track topic history and category rotation
+TOPIC_TRACKER_FILE = "topic_tracker.json"
+
+
+def _load_topic_tracker():
+    """Load or initialize the topic tracker file."""
+    if Path(TOPIC_TRACKER_FILE).exists():
+        try:
+            with open(TOPIC_TRACKER_FILE, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            logging.warning("Failed to load topic tracker: %s. Starting fresh.", e)
+    
+    # Initialize new tracker
+    tracker = {
+        "next_category_index": 0,
+        "used_topics": [],
+        "category_counts": {cat: 0 for cat in TECH_CATEGORIES}
+    }
+    return tracker
+
+
+def _save_topic_tracker(tracker):
+    """Save the topic tracker to file."""
+    try:
+        with open(TOPIC_TRACKER_FILE, 'w') as f:
+            json.dump(tracker, f, indent=2)
+    except Exception as e:
+        logging.error("Failed to save topic tracker: %s", e)
+
+
+def _get_next_category():
+    """Get the next category for topic generation using round-robin rotation."""
+    tracker = _load_topic_tracker()
+    category_idx = tracker.get("next_category_index", 0) % len(TECH_CATEGORIES)
+    category = TECH_CATEGORIES[category_idx]
+    
+    # Update rotation index
+    tracker["next_category_index"] = (category_idx + 1) % len(TECH_CATEGORIES)
+    _save_topic_tracker(tracker)
+    
+    logging.info(f"Category rotation: {category} (index {category_idx + 1}/{len(TECH_CATEGORIES)})")
+    return category
+
 
 def choose_topic(max_retries=3, model="gemini-2.0-flash"):
-    prompt = """You are an expert technical content strategist for a developer blog. Generate ONE fresh, compelling blog topic (6-12 words) that appeals to software developers and engineers.
-Choose randomly from the following categories and then randomly from the subtopics within each category.:
-DO NOT repeat topics from previous posts.
-TOPIC DIVERSITY REQUIREMENTS:
-- Rotate through these technical categories systematically:
-  1. Programming Languages (new features, best practices, comparisons)
-  2. Frameworks & Libraries (React, Vue, Angular, Spring, Django, etc.)
-  3. Databases & Data Engineering (SQL, NoSQL, optimization, data modeling)
-  4. DevOps & Infrastructure (Docker, Kubernetes, CI/CD, cloud platforms)
-  5. System Design & Architecture (microservices, patterns, scalability)
-  6. Performance & Optimization (caching, load balancing, monitoring)
-  7. Security & Best Practices (authentication, encryption, vulnerabilities)
-  8. Emerging Tech & Tools (AI/ML, blockchain, new dev tools, trends)
-  9. Software Engineering Practices (testing, debugging, code quality)
-  10. Career & Productivity (learning paths, team collaboration, workflows)
+    """Generate a fresh blog topic using category rotation + history tracking.
+    
+    This ensures:
+    1. Category diversity - rotates through all 10 categories systematically
+    2. Topic freshness - never generates the same topic twice
+    """
+    # Get next category from rotation
+    forced_category = _get_next_category()
+    
+    # Load topic history
+    tracker = _load_topic_tracker()
+    used_topics = tracker.get("used_topics", [])
+    
+    # Format used topics for the prompt
+    recent_topics = used_topics[-20:] if used_topics else []  # Last 20 to avoid huge context
+    topics_text = "\n".join([f"- {t}" for t in recent_topics]) if recent_topics else "(none yet)"
+    
+    prompt = f"""You are an expert technical content strategist for a developer blog. Generate ONE fresh, compelling blog topic (6-12 words) that appeals to software developers and engineers.
+
+YOU MUST FOLLOW THIS RULE:
+**The topic MUST be about: {forced_category}**
+Pick a specific subtopic or angle within this category, but stay within {forced_category}.
+
+RECENT TOPICS TO AVOID (do NOT repeat):
+{topics_text}
 
 CRITERIA:
 - Must be practical and actionable for working developers
 - Avoid basic/introductory topics unless there's a novel angle
-- Include both foundational concepts and cutting-edge technologies
-- Balance between depth topics and broad appeal
 - Ensure topics are evergreen enough to remain relevant
 - Focus on problems developers actually face
+- Use different angles than the recent topics above
+- Be specific and compelling (6-12 words)
 
 Return ONLY the topic/title as plain text with no additional commentary."""
 
@@ -78,12 +147,32 @@ Return ONLY the topic/title as plain text with no additional commentary."""
             )
             text = getattr(response, "text", None) or str(response)
             topic = next((ln.strip().strip('"').strip("'") for ln in text.splitlines() if ln.strip()), "")
-            if topic:
+            
+            if topic and topic not in used_topics:
+                logging.info(f"✓ Generated topic (Category: {forced_category}): {topic}")
+                
+                # Save to history
+                tracker["used_topics"].append(topic)
+                tracker["category_counts"][forced_category] = tracker["category_counts"].get(forced_category, 0) + 1
+                _save_topic_tracker(tracker)
+                
                 return topic
-        except Exception:
-            logging.debug("Topic gen attempt failed", exc_info=True)
+            elif topic in used_topics:
+                logging.warning(f"Topic already used: {topic}. Retrying...")
+        except Exception as e:
+            logging.debug(f"Topic generation attempt {attempt + 1} failed: {e}")
         time.sleep(1)
-    return f"Developer trends and tooling — {time.strftime('%Y-%m-%d')}"
+    
+    # Fallback if all retries fail
+    fallback = f"{forced_category} — {time.strftime('%Y-%m-%d')}"
+    logging.warning(f"Topic generation failed after {max_retries} retries. Using fallback: {fallback}")
+    
+    # Save fallback to history
+    tracker = _load_topic_tracker()
+    tracker["used_topics"].append(fallback)
+    _save_topic_tracker(tracker)
+    
+    return fallback
 
 
 def _looks_truncated(text: str) -> bool:
