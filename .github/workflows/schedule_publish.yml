@@ -26,7 +26,6 @@ jobs:
         env:
           WP_SITE: ${{ secrets.WP_SITE }}
           WP_USER: ${{ secrets.WP_USER }}
-          WP_APP_PASS: ${{ secrets.WORDPRESS_TOKEN }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           WP_EMAIL_ADDRESS: ${{ secrets.WP_EMAIL_ADDRESS }}
