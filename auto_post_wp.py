@@ -1,7 +1,7 @@
-# auto_post_wp_fixed.py
+# auto_post_wp.py
 """
-Clean, email-only entrypoint for the project. This file is a replacement for a previous
-`auto_post_wp.py` that was refactored to use Post-by-Email.
+Gmail SMTP entrypoint for auto-publishing blog posts to WordPress via Post-by-Email.
+Generates topics and content using Google Gemini API, then sends via Gmail to WordPress.
 """
 
 import os
@@ -14,7 +14,6 @@ import smtplib
 import argparse
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from markdown import markdown
 from pathlib import Path
 
 # --- Google GenAI (Gemini) client
@@ -28,17 +27,11 @@ except Exception:
     logging.debug("No .env loaded; relying on environment variables")
 
 GENAI_API_KEY = os.getenv("GEMINI_API_KEY")
-# SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 WP_EMAIL_ADDRESS = os.getenv("WP_EMAIL_ADDRESS")
-SENDER_EMAIL = os.getenv("SENDER_EMAIL", "paxep16902@agenra.com")  # SendGrid verified sender
 
 if not GENAI_API_KEY:
     logging.error("Missing GEMINI_API_KEY")
     raise SystemExit(1)
-
-# if not SENDGRID_API_KEY:
-#     logging.error("Missing SENDGRID_API_KEY")
-#     raise SystemExit(1)
 
 client = genai.Client(api_key=GENAI_API_KEY)
 
@@ -541,108 +534,6 @@ def _convert_markdown_to_plain_and_html(markdown_text: str):
     
     return html_body, full_html
 
-
-
-
-
-
-
-
-def publish_via_rest_api(post, dry_run=False, show=False, save=False):
-    """Publish directly to WordPress via REST API (bypasses Post-by-Email).
-    
-    Requires WP_SITE, WP_USER, and WP_APP_PASSWORD in environment.
-    WP_APP_PASSWORD is a WordPress Application Password (created in WordPress admin).
-    """
-    import base64
-    try:
-        import requests
-    except ImportError:
-        logging.error("requests library required for REST API publishing. Install with: pip install requests")
-        raise SystemExit(1)
-    
-    wp_site = os.getenv("WP_SITE")
-    wp_user = os.getenv("WP_USER")
-    wp_app_password = os.getenv("WP_APP_PASSWORD")
-    
-    if not (wp_site and wp_user and wp_app_password):
-        raise ValueError(
-            "WP_SITE, WP_USER, and WP_APP_PASSWORD are required in environment for REST API transport. "
-            "WP_APP_PASSWORD can be created in WordPress: Settings → Users → Your Profile → Application Passwords"
-        )
-    
-    title = post.get("title", "Untitled")
-    body_html = post.get("body_html", "")
-    body_plain = re.sub(r'<[^>]+>', '', body_html).strip()
-    
-    # Convert to plain with shortcodes and HTML
-    plain_with_shortcodes, html_body = _convert_markdown_to_plain_and_html(body_plain)
-    
-    # The HTML body (extract just the <body> content for the post)
-    body_match = re.search(r'<body>(.*?)</body>', html_body, re.DOTALL)
-    post_content = body_match.group(1).strip() if body_match else html_body
-    
-    # Prepare REST API request
-    wp_rest_url = f"{wp_site.rstrip('/')}/wp-json/wp/v2/posts"
-    auth_header = base64.b64encode(f"{wp_user}:{wp_app_password}".encode()).decode()
-    headers = {
-        "Authorization": f"Basic {auth_header}",
-        "Content-Type": "application/json"
-    }
-    
-    post_data = {
-        "title": title,
-        "content": post_content,
-        "status": "draft",  # Create as draft; user can publish manually
-        "excerpt": post_content[:200]  # First 200 chars as excerpt
-    }
-    
-    logging.info("Preparing to post via WordPress REST API to %s", wp_rest_url)
-    logging.info("Subject: %s", title)
-    logging.info("Content length: %d chars", len(post_content))
-    logging.info("Status: draft (you'll publish manually)")
-    
-    if show:
-        print("\n----- REST API POST DATA -----\n")
-        print(f"Title: {title}\n")
-        print("Content (HTML):")
-        print(post_content)
-        print("\n----- END -----\n")
-    
-    if save:
-        fname = f"last_post_{int(time.time())}.txt"
-        try:
-            with open(fname, "w", encoding="utf-8") as fh:
-                fh.write(f"Title: {title}\n\n")
-                fh.write(f"REST API POST DATA:\n\n")
-                fh.write(post_content)
-            logging.info("Saved full post to %s", fname)
-        except Exception:
-            logging.exception("Failed to save post to file")
-    
-    if dry_run:
-        logging.info("Dry run enabled — not posting. Preview saved above.")
-        return {"post_title": title, "wp_site": wp_site, "dry_run": True, "transport": "rest"}
-    
-    try:
-        response = requests.post(wp_rest_url, json=post_data, headers=headers, timeout=30)
-        response.raise_for_status()
-        result = response.json()
-        post_id = result.get("id")
-        post_link = result.get("link")
-        logging.info("✓ Post created successfully via REST API: %s", post_link)
-        return {
-            "post_title": title,
-            "post_id": post_id,
-            "post_link": post_link,
-            "wp_site": wp_site,
-            "transport": "rest"
-        }
-    except Exception as e:
-        logging.error("Error posting via REST API: %s", e)
-        raise
-
-
 def publish_via_gmail(post, dry_run=False, show=False, save=False):
     """Send the post via Gmail SMTP to the WP email address as HTML.
     
@@ -718,11 +609,10 @@ def publish_via_gmail(post, dry_run=False, show=False, save=False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Auto post to WordPress via email (Gmail only) or REST API")
+    parser = argparse.ArgumentParser(description="Auto post to WordPress via Gmail SMTP (Post-by-Email)")
     parser.add_argument("--dry-run", action="store_true", help="Don't actually send email; print payload instead.")
     parser.add_argument("--show", action="store_true", help="Print the full generated post to the console before sending")
     parser.add_argument("--save", action="store_true", help="Save the full generated post to a file before sending")
-    parser.add_argument("--transport", choices=["gmail", "rest"], default="gmail", help="Transport method: 'gmail' (Post-by-Email) or 'rest' (WordPress REST API)")
     args = parser.parse_args()
 
     logging.info("Starting auto-post flow")
@@ -731,14 +621,11 @@ def main():
     post = generate_post(topic)
     logging.info("Generated post")
 
-    # Route to appropriate transport
-    if args.transport == "rest":
-        result = publish_via_rest_api(post, dry_run=args.dry_run, show=args.show, save=args.save)
-    else:
-        result = publish_via_gmail(post, dry_run=args.dry_run, show=args.show, save=args.save)
+    # Publish via Gmail SMTP to WordPress Post-by-Email
+    result = publish_via_gmail(post, dry_run=args.dry_run, show=args.show, save=args.save)
 
     with open("publish_log.jsonl", "a") as f:
-        f.write(json.dumps({"topic": topic, "result": result, "ts": int(time.time()), "transport": args.transport}) + "\n")
+        f.write(json.dumps({"topic": topic, "result": result, "ts": int(time.time())}) + "\n")
     logging.info("Done. Result: %s", result)
 
 
