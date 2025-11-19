@@ -1,13 +1,13 @@
-# SendGrid + WordPress Post-by-Email Setup
+# Gmail + WordPress Post-by-Email Setup
 
-This project uses **SendGrid** (email service) to send blog posts to **WordPress Post-by-Email** for automatic publishing.
+This project uses **Gmail SMTP** to send blog posts to **WordPress Post-by-Email** for automatic publishing.
 
 ## Architecture
 
 ```
 Gemini API (Generate Topics & Posts)
         ↓
-SendGrid API (Send Email)
+Gmail SMTP (Send Email)
         ↓
 WordPress Post-by-Email (Create Draft Post)
         ↓
@@ -16,10 +16,11 @@ WordPress Blog
 
 ## Prerequisites
 
-1. **SendGrid Account** (free tier available at https://sendgrid.com)
-2. **WordPress Blog** with Post-by-Email enabled
-3. **Google Gemini API Key** (for content generation)
-4. **Python 3.7+**
+1. **Gmail Account** with 2-factor authentication enabled
+2. **Gmail App Password** (generated for this application)
+3. **WordPress Blog** with Post-by-Email enabled
+4. **Google Gemini API Key** (for content generation)
+5. **Python 3.7+**
 
 ## Environment Setup
 
@@ -29,35 +30,42 @@ WordPress Blog
 # Google Gemini API
 GEMINI_API_KEY=your_gemini_api_key_here
 
-# SendGrid Configuration
-SENDGRID_API_KEY=SG.your_sendgrid_api_key_here
-SENDER_EMAIL=your-verified-email@example.com
+# Gmail SMTP Configuration
+GMAIL_USER=your-email@gmail.com
+GMAIL_APP_PASSWORD=your-16-char-app-password
 
 # WordPress Post-by-Email
 WP_EMAIL_ADDRESS=your-post-by-email@post.wordpress.com
+WP_SITE=https://yourwordpressblog.com
+WP_USER=your-wordpress-username
+WORDPRESS_TOKEN=your-wordpress-app-password
 ```
 
-### 2. Install Dependencies
+### 2. Generate Gmail App Password
+
+1. Go to https://myaccount.google.com/security
+2. Enable 2-Step Verification if not already done
+3. Search for "App passwords"
+4. Select "Mail" and "Windows Computer" (or your device)
+5. Copy the 16-character password and use it as `GMAIL_APP_PASSWORD`
+
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
-
-### 3. Verify SendGrid Sender Email
-
-See `SENDGRID_SETUP.md` for detailed instructions on verifying your sender email.
 
 ## How It Works
 
 ### Content Generation (Gemini)
 1. Generates a developer-focused blog topic
 2. Writes a 500-1000 word blog post about the topic
-3. Formats as plain text (no HTML)
+3. Formats with HTML for rich formatting
 
-### Email Sending (SendGrid)
-1. Sends the blog post via SendGrid API
+### Email Sending (Gmail SMTP)
+1. Sends the blog post via Gmail SMTP (smtp.gmail.com:465)
 2. Email goes to WordPress Post-by-Email address
-3. Plain text formatting is preserved
+3. HTML formatting is preserved
 
 ### Publishing (WordPress)
 1. WordPress receives email via Post-by-Email feature
@@ -75,14 +83,14 @@ python3 auto_post_wp.py
 
 Expected output:
 ```
-INFO Starting auto-post (fixed) flow
+INFO Starting auto-post flow
 INFO Topic: [Generated Topic]
 INFO Generated post
-INFO Sending email via SendGrid API
+INFO Connecting to smtp.gmail.com:465
 INFO Sending to: your-post-by-email@post.wordpress.com
 INFO Subject: [Post Title]
-INFO Body length (plain text): XXXX chars
-INFO ✓ Email sent successfully via SendGrid
+INFO Body length: XXXX chars
+INFO ✓ Email sent successfully
 INFO Done. Result: {...}
 ```
 
@@ -94,16 +102,22 @@ The project includes a GitHub Actions workflow that runs daily at 09:00 UTC.
 
 **Required GitHub Secrets**:
 - `GEMINI_API_KEY`: Your Gemini API key
-- `SENDGRID_API_KEY`: Your SendGrid API key  
-- `SENDER_EMAIL`: Your verified SendGrid sender email
+- `GMAIL_USER`: Your Gmail email address
+- `GMAIL_APP_PASSWORD`: Your 16-character Gmail app password
 - `WP_EMAIL_ADDRESS`: Your WordPress Post-by-Email address
+- `WP_SITE`: Your WordPress site URL
+- `WP_USER`: Your WordPress username
+- `WORDPRESS_TOKEN`: Your WordPress app password
+
 
 ## Troubleshooting
 
-### SendGrid Error: "from address does not match a verified Sender Identity"
+### Gmail Authentication Error: "Login with app passwords only"
 
-**Solution**: Verify your sender email in SendGrid dashboard
-- See `SENDGRID_SETUP.md` for step-by-step instructions
+**Solution**: Ensure you're using an app-specific password, not your regular Gmail password
+1. Go to https://myaccount.google.com/apppasswords
+2. Generate a new 16-character app password for Gmail
+3. Update `GMAIL_APP_PASSWORD` in `.env`
 
 ### Post content appears as draft in WordPress
 
@@ -113,16 +127,18 @@ The project includes a GitHub Actions workflow that runs daily at 09:00 UTC.
 ### Email not received by WordPress
 
 **Debugging**:
-1. Check SendGrid logs: https://app.sendgrid.com/email_activity
+1. Check Gmail account for bounce/delivery issues
 2. Verify `WP_EMAIL_ADDRESS` is correct
 3. Ensure WordPress Post-by-Email is enabled (Settings → Post by Email in WordPress admin)
+4. Check spam folder in WordPress Post-by-Email inbox
 
-### Content looks incorrect in WordPress
+### SMTP Connection Timeout
 
-**Common issues**:
-- Plain text formatting may not render as expected
-- Use clear paragraph breaks (double newlines) for readability
-- Lists, headers, and code blocks should be clearly marked in plain text
+**Solutions**:
+- Verify Gmail app password is correct (16 characters)
+- Ensure 2-factor authentication is enabled on Gmail account
+- Check firewall isn't blocking port 465
+- Verify GMAIL_USER matches your Gmail address
 
 ## File Structure
 
@@ -139,11 +155,11 @@ publish_log.jsonl            # Log of published posts
 ## Key Features
 
 ✅ **Fully Automated**: Topic generation, content creation, and publishing
-✅ **Plain Text Focus**: No HTML stripping issues like Gmail
-✅ **Reliable Email**: SendGrid has 99.99% uptime SLA
+✅ **Gmail SMTP**: Reliable email delivery via Gmail
 ✅ **Developer Content**: Focused on tech, programming, DevOps, and more
 ✅ **Scheduled Publishing**: Daily automation via GitHub Actions
 ✅ **Audit Trail**: `publish_log.jsonl` tracks all posts
+✅ **HTML Support**: Rich text formatting in email body
 
 ## Customization
 
