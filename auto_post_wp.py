@@ -596,8 +596,14 @@ def publish_via_gmail(post, dry_run=False, show=False, save=False):
         return {"post_title": title, "to": to_addr, "dry_run": True}
 
     try:
-        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30)
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
         server.login(gmail_user, gmail_pass)
+        
+        # server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30)
+        # server.login(gmail_user, gmail_pass)
         server.sendmail(gmail_user, [to_addr], msg.as_string())
         server.quit()
         logging.info("✓ Email sent successfully via Gmail SMTP (HTML with proper formatting)")
