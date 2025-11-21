@@ -8,6 +8,7 @@ import os
 import time
 import json
 import logging
+import sys
 from dotenv import load_dotenv
 import re
 import smtplib
@@ -596,6 +597,8 @@ def publish_via_gmail(post, dry_run=False, show=False, save=False):
         return {"post_title": title, "to": to_addr, "dry_run": True}
 
     try:
+
+        print(gmail_user, gmail_pass)
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.ehlo()
         server.starttls()
