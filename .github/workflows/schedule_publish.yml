@@ -21,6 +21,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Debug secrets
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
+        run: |
+          echo "GMAIL_USER length: ${#GMAIL_USER}"
+          echo "GMAIL_PASS length: ${#GMAIL_PASS}"
+          
       - name: Run auto post script
         working-directory: ${{ github.workspace }}
         env:
@@ -31,11 +39,3 @@ jobs:
           GMAIL_PASS: ${{ secrets.GMAIL_APP_PASSWORD }}
           WP_EMAIL_ADDRESS: ${{ secrets.WP_EMAIL_ADDRESS }}
         run: python auto_post_wp.py
-
-      - name: Debug secrets
-        env:
-          GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
-        run: |
-          echo "GMAIL_USER length: ${#GMAIL_USER}"
-          echo "GMAIL_PASS length: ${#GMAIL_PASS}"
