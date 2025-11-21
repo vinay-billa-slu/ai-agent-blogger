@@ -1,5 +1,5 @@
 {
-  "next_category_index": 0,
+  "next_category_index": 1,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -10,10 +10,11 @@
     "Secrets Management in CI/CD: Secure Pipelines from Development to Production",
     "Kubernetes Operators: Automating Complex Application Deployments & Management",
     "Branching Strategies Demystified: Gitflow vs. Trunk-Based Development in Practice",
-    "From Burnout to Balance: Sustainable Coding Habits for Career Longevity"
+    "From Burnout to Balance: Sustainable Coding Habits for Career Longevity",
+    "Polyglot Persistence: Choosing the Right Database per Microservice (Language)"
   ],
   "category_counts": {
-    "Programming Languages": 1,
+    "Programming Languages": 2,
     "Frameworks & Libraries": 1,
     "Databases & Data Engineering": 1,
     "DevOps & Infrastructure": 1,
