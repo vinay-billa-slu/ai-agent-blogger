@@ -25,10 +25,17 @@ jobs:
       - name: Run auto post script
         working-directory: ${{ github.workspace }}
         env:
-          WP_SITE: ${{ secrets.WP_SITE }}
-          WP_USER: ${{ secrets.WP_USER }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_PASS: ${{ secrets.GMAIL_APP_PASSWORD }}  
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           WP_EMAIL_ADDRESS: ${{ secrets.WP_EMAIL_ADDRESS }}
         run: python auto_post_wp.py
+
+      - name: Commit updated tracking files
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add topic_tracker.json publish_log.jsonl
+          git commit -m "chore: update tracking files after auto-post" || true
+          git push || true
