@@ -31,6 +31,13 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASS: ${{ secrets.GMAIL_APP_PASSWORD }}
 
+      - name: Debug GMAIL_PASS raw characters
+        env:
+          GMAIL_PASS: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: |
+          echo "Hex dump:"
+          printf '%s' "$GMAIL_PASS" | hexdump -C
+
       - name: Run auto post script
         working-directory: ${{ github.workspace }}
         env:
