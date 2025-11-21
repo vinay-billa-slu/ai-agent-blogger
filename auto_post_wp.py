@@ -380,7 +380,7 @@ REQUIRED OUTPUT:
 def run_basic_checks(post):
     """Validate required environment for Gmail transport (only transport supported)."""
     gmail_user = os.getenv("GMAIL_USER")
-    gmail_pass = os.getenv("GMAIL_APP_PASSWORD")
+    gmail_pass = os.getenv("GMAIL_PASS")
     if not (gmail_user and gmail_pass and WP_EMAIL_ADDRESS):
         raise ValueError("GMAIL_USER, GMAIL_APP_PASSWORD and WP_EMAIL_ADDRESS are required in environment for Gmail transport")
     return True
@@ -545,7 +545,7 @@ def publish_via_gmail(post, dry_run=False, show=False, save=False):
     """
     run_basic_checks(post)
     gmail_user = os.getenv("GMAIL_USER")
-    gmail_pass = os.getenv("GMAIL_APP_PASSWORD")
+    gmail_pass = os.getenv("GMAIL_PASS")
     to_addr = WP_EMAIL_ADDRESS
 
     title = post.get("title", "Untitled")
@@ -597,8 +597,6 @@ def publish_via_gmail(post, dry_run=False, show=False, save=False):
         return {"post_title": title, "to": to_addr, "dry_run": True}
 
     try:
-
-        print(gmail_user, gmail_pass)
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.ehlo()
         server.starttls()
