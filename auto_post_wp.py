@@ -382,10 +382,6 @@ def run_basic_checks(post):
     """Validate required environment for Gmail transport (only transport supported)."""
     gmail_user = os.getenv("GMAIL_USER")
     gmail_pass = os.getenv("GMAIL_PASS")
-
-    print("User:", gmail_user, len(gmail_user or ""))
-    print("Pass length:", gmail_pass, len(gmail_pass or ""))
-    print("WP_EMAIL_ADDRESS:", WP_EMAIL_ADDRESS, len(WP_EMAIL_ADDRESS or ""))
     
     if not (gmail_user and gmail_pass and WP_EMAIL_ADDRESS):
         raise ValueError("GMAIL_USER, GMAIL_APP_PASSWORD and WP_EMAIL_ADDRESS are required in environment for Gmail transport")
