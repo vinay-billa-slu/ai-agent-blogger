@@ -1,5 +1,5 @@
 {
-  "next_category_index": 1,
+  "next_category_index": 2,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -11,11 +11,12 @@
     "Kubernetes Operators: Automating Complex Application Deployments & Management",
     "Branching Strategies Demystified: Gitflow vs. Trunk-Based Development in Practice",
     "From Burnout to Balance: Sustainable Coding Habits for Career Longevity",
-    "Polyglot Persistence: Choosing the Right Database per Microservice (Language)"
+    "Polyglot Persistence: Choosing the Right Database per Microservice (Language)",
+    "Framework Fatigue Fix: Composing Custom Frameworks From Existing Libraries"
   ],
   "category_counts": {
     "Programming Languages": 2,
-    "Frameworks & Libraries": 1,
+    "Frameworks & Libraries": 2,
     "Databases & Data Engineering": 1,
     "DevOps & Infrastructure": 1,
     "System Design & Architecture": 1,
