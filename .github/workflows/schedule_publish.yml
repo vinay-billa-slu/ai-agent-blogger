@@ -33,9 +33,9 @@ jobs:
         run: python auto_post_wp.py
 
       - name: Debug secrets
-        run: |
-          echo "GMAIL_USER length: ${#GMAIL_USER}"
-          echo "GMAIL_PASS length: ${#GMAIL_PASS}"
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
+        run: |
+          echo "GMAIL_USER length: ${#GMAIL_USER}"
+          echo "GMAIL_PASS length: ${#GMAIL_PASS}"
