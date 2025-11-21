@@ -23,7 +23,8 @@ from google import genai
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 try:
-    load_dotenv()
+    if os.getenv("GITHUB_ACTIONS") != "true":
+        load_dotenv()
 except Exception:
     logging.debug("No .env loaded; relying on environment variables")
 
