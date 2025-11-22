@@ -1,5 +1,5 @@
 {
-  "next_category_index": 2,
+  "next_category_index": 3,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -12,12 +12,13 @@
     "Branching Strategies Demystified: Gitflow vs. Trunk-Based Development in Practice",
     "From Burnout to Balance: Sustainable Coding Habits for Career Longevity",
     "Polyglot Persistence: Choosing the Right Database per Microservice (Language)",
-    "Framework Fatigue Fix: Composing Custom Frameworks From Existing Libraries"
+    "Framework Fatigue Fix: Composing Custom Frameworks From Existing Libraries",
+    "Data Lineage and Impact Analysis: Building Trustworthy Data Pipelines"
   ],
   "category_counts": {
     "Programming Languages": 2,
     "Frameworks & Libraries": 2,
-    "Databases & Data Engineering": 1,
+    "Databases & Data Engineering": 2,
     "DevOps & Infrastructure": 1,
     "System Design & Architecture": 1,
     "Performance & Optimization": 1,
