@@ -1,5 +1,5 @@
 {
-  "next_category_index": 4,
+  "next_category_index": 5,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -14,14 +14,15 @@
     "Polyglot Persistence: Choosing the Right Database per Microservice (Language)",
     "Framework Fatigue Fix: Composing Custom Frameworks From Existing Libraries",
     "Data Lineage and Impact Analysis: Building Trustworthy Data Pipelines",
-    "Serverless Observability: From Zero to Insight with OpenTelemetry"
+    "Serverless Observability: From Zero to Insight with OpenTelemetry",
+    "Designing for Failure: Building Resilient Systems Through Chaos Engineering"
   ],
   "category_counts": {
     "Programming Languages": 2,
     "Frameworks & Libraries": 2,
     "Databases & Data Engineering": 2,
     "DevOps & Infrastructure": 2,
-    "System Design & Architecture": 1,
+    "System Design & Architecture": 2,
     "Performance & Optimization": 1,
     "Security & Best Practices": 1,
     "Emerging Tech & Tools": 1,
