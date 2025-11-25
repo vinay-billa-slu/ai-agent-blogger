@@ -1,5 +1,5 @@
 {
-  "next_category_index": 5,
+  "next_category_index": 6,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -15,7 +15,8 @@
     "Framework Fatigue Fix: Composing Custom Frameworks From Existing Libraries",
     "Data Lineage and Impact Analysis: Building Trustworthy Data Pipelines",
     "Serverless Observability: From Zero to Insight with OpenTelemetry",
-    "Designing for Failure: Building Resilient Systems Through Chaos Engineering"
+    "Designing for Failure: Building Resilient Systems Through Chaos Engineering",
+    "Hotspot Profiling: Uncover & Eliminate Performance Bottlenecks in Your Code"
   ],
   "category_counts": {
     "Programming Languages": 2,
@@ -23,7 +24,7 @@
     "Databases & Data Engineering": 2,
     "DevOps & Infrastructure": 2,
     "System Design & Architecture": 2,
-    "Performance & Optimization": 1,
+    "Performance & Optimization": 2,
     "Security & Best Practices": 1,
     "Emerging Tech & Tools": 1,
     "Software Engineering Practices": 1,
