@@ -1,5 +1,5 @@
 {
-  "next_category_index": 6,
+  "next_category_index": 7,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -16,7 +16,8 @@
     "Data Lineage and Impact Analysis: Building Trustworthy Data Pipelines",
     "Serverless Observability: From Zero to Insight with OpenTelemetry",
     "Designing for Failure: Building Resilient Systems Through Chaos Engineering",
-    "Hotspot Profiling: Uncover & Eliminate Performance Bottlenecks in Your Code"
+    "Hotspot Profiling: Uncover & Eliminate Performance Bottlenecks in Your Code",
+    "Preventing Injection Attacks: Validating User Input Beyond Basic Sanitization"
   ],
   "category_counts": {
     "Programming Languages": 2,
@@ -25,7 +26,7 @@
     "DevOps & Infrastructure": 2,
     "System Design & Architecture": 2,
     "Performance & Optimization": 2,
-    "Security & Best Practices": 1,
+    "Security & Best Practices": 2,
     "Emerging Tech & Tools": 1,
     "Software Engineering Practices": 1,
     "Career & Productivity": 1
