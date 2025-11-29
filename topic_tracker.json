@@ -1,5 +1,5 @@
 {
-  "next_category_index": 9,
+  "next_category_index": 0,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -19,7 +19,8 @@
     "Hotspot Profiling: Uncover & Eliminate Performance Bottlenecks in Your Code",
     "Preventing Injection Attacks: Validating User Input Beyond Basic Sanitization",
     "WebAssembly Beyond the Browser: Server-Side & Edge Computing Power",
-    "Refactoring Legacy Code Painlessly: Strangler Fig Pattern, Step-by-Step"
+    "Refactoring Legacy Code Painlessly: Strangler Fig Pattern, Step-by-Step",
+    "Engineering Career Roadmaps: Crafting Your Ideal Growth Trajectory"
   ],
   "category_counts": {
     "Programming Languages": 2,
@@ -31,6 +32,6 @@
     "Security & Best Practices": 2,
     "Emerging Tech & Tools": 2,
     "Software Engineering Practices": 2,
-    "Career & Productivity": 1
+    "Career & Productivity": 2
   }
 }
