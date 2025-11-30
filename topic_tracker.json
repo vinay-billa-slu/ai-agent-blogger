@@ -1,5 +1,5 @@
 {
-  "next_category_index": 0,
+  "next_category_index": 1,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -20,10 +20,11 @@
     "Preventing Injection Attacks: Validating User Input Beyond Basic Sanitization",
     "WebAssembly Beyond the Browser: Server-Side & Edge Computing Power",
     "Refactoring Legacy Code Painlessly: Strangler Fig Pattern, Step-by-Step",
-    "Engineering Career Roadmaps: Crafting Your Ideal Growth Trajectory"
+    "Engineering Career Roadmaps: Crafting Your Ideal Growth Trajectory",
+    "Metaprogramming Showdown: Code Generation Strategies Across Languages"
   ],
   "category_counts": {
-    "Programming Languages": 2,
+    "Programming Languages": 3,
     "Frameworks & Libraries": 2,
     "Databases & Data Engineering": 2,
     "DevOps & Infrastructure": 2,
