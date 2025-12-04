@@ -1,5 +1,5 @@
 {
-  "next_category_index": 4,
+  "next_category_index": 5,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -24,14 +24,15 @@
     "Metaprogramming Showdown: Code Generation Strategies Across Languages",
     "Beyond Vanilla: Frameworks to Simplify Complex Web Animations",
     "Streaming Data Warehouses: Real-time Analytics With Iceberg & Flink",
-    "Infrastructure as Code Security: Automate Threat Detection & Remediation"
+    "Infrastructure as Code Security: Automate Threat Detection & Remediation",
+    "API Gateway Anti-Patterns: Recognize and Rectify Common Design Flaws"
   ],
   "category_counts": {
     "Programming Languages": 3,
     "Frameworks & Libraries": 3,
     "Databases & Data Engineering": 3,
     "DevOps & Infrastructure": 3,
-    "System Design & Architecture": 2,
+    "System Design & Architecture": 3,
     "Performance & Optimization": 2,
     "Security & Best Practices": 2,
     "Emerging Tech & Tools": 2,
