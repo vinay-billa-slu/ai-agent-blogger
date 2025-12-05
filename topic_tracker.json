@@ -1,5 +1,5 @@
 {
-  "next_category_index": 5,
+  "next_category_index": 6,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -25,7 +25,8 @@
     "Beyond Vanilla: Frameworks to Simplify Complex Web Animations",
     "Streaming Data Warehouses: Real-time Analytics With Iceberg & Flink",
     "Infrastructure as Code Security: Automate Threat Detection & Remediation",
-    "API Gateway Anti-Patterns: Recognize and Rectify Common Design Flaws"
+    "API Gateway Anti-Patterns: Recognize and Rectify Common Design Flaws",
+    "Optimize Frontend Performance: Lazy Loading Modules & Components"
   ],
   "category_counts": {
     "Programming Languages": 3,
@@ -33,7 +34,7 @@
     "Databases & Data Engineering": 3,
     "DevOps & Infrastructure": 3,
     "System Design & Architecture": 3,
-    "Performance & Optimization": 2,
+    "Performance & Optimization": 3,
     "Security & Best Practices": 2,
     "Emerging Tech & Tools": 2,
     "Software Engineering Practices": 2,
