@@ -1,5 +1,5 @@
 {
-  "next_category_index": 6,
+  "next_category_index": 7,
   "used_topics": [
     "Beyond Syntax: Mastering Subtle Language Quirks for Robust Code",
     "Micro-Frontends: Share React Components Between Frameworks for Reusability",
@@ -26,7 +26,8 @@
     "Streaming Data Warehouses: Real-time Analytics With Iceberg & Flink",
     "Infrastructure as Code Security: Automate Threat Detection & Remediation",
     "API Gateway Anti-Patterns: Recognize and Rectify Common Design Flaws",
-    "Optimize Frontend Performance: Lazy Loading Modules & Components"
+    "Optimize Frontend Performance: Lazy Loading Modules & Components",
+    "Secure by Design: Threat Modeling as a Core Development Practice"
   ],
   "category_counts": {
     "Programming Languages": 3,
@@ -35,7 +36,7 @@
     "DevOps & Infrastructure": 3,
     "System Design & Architecture": 3,
     "Performance & Optimization": 3,
-    "Security & Best Practices": 2,
+    "Security & Best Practices": 3,
     "Emerging Tech & Tools": 2,
     "Software Engineering Practices": 2,
     "Career & Productivity": 2
